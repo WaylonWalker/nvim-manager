@@ -111,7 +111,7 @@ def update(version: str):
         # Remove existing installation
         shutil.rmtree(target_dir)
         # Reinstall the version
-        install(version)
+    install(version)
     console.print(f"[green]Version '{version}' updated successfully.[/green]")
 
 
