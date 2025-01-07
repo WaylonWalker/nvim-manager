@@ -97,20 +97,13 @@ def list_versions():
 @app.command()
 def update(version: str):
     """Update a specific version by reinstalling it.
-    
+
     Args:
         version: The version to update
     """
     target_dir = INSTALL_DIR / f"{PREFIX}{version}"
     if not target_dir.exists():
         console.print(f"[red]Version '{version}' is not installed.[/red]")
-        raise typer.Exit(code=1)
-
-    repo = Repo(target_dir)
-    if repo.head.is_detached:
-        console.print(
-            f"[yellow]Version '{version}' is based on a tag and cannot be updated.[/yellow]"
-        )
         raise typer.Exit(code=1)
 
     console.print(f"Updating version '{version}'...")
