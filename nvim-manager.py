@@ -95,23 +95,31 @@ def list_versions():
 
 
 @app.command()
-def update():
-    """Update mutable branch-based versions."""
-    installed_dirs = [p for p in INSTALL_DIR.iterdir() if p.name.startswith(PREFIX)]
+def update(version: str):
+    """Update a specific version by reinstalling it.
+    
+    Args:
+        version: The version to update
+    """
+    target_dir = INSTALL_DIR / f"{PREFIX}{version}"
+    if not target_dir.exists():
+        console.print(f"[red]Version '{version}' is not installed.[/red]")
+        raise typer.Exit(code=1)
 
-    for installed_dir in installed_dirs:
-        version = installed_dir.name.replace(PREFIX, "")
-        repo = Repo(installed_dir)
+    repo = Repo(target_dir)
+    if repo.head.is_detached:
+        console.print(
+            f"[yellow]Version '{version}' is based on a tag and cannot be updated.[/yellow]"
+        )
+        raise typer.Exit(code=1)
 
-        if not repo.head.is_detached:
-            console.print(f"Updating version '{version}'...")
-            with console.status(f"Updating {version}..."):
-                repo.remote().pull()
-            console.print(f"[green]Version '{version}' updated successfully.[/green]")
-        else:
-            console.print(
-                f"[yellow]Version '{version}' is based on a tag and cannot be updated.[/yellow]"
-            )
+    console.print(f"Updating version '{version}'...")
+    with console.status(f"Updating {version}..."):
+        # Remove existing installation
+        shutil.rmtree(target_dir)
+        # Reinstall the version
+        install(version)
+    console.print(f"[green]Version '{version}' updated successfully.[/green]")
 
 
 if __name__ == "__main__":
