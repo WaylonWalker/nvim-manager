@@ -21,7 +21,7 @@ def get_release_notes(version):
 
 You can install nvim-manager using one of these methods:
 
-> !nvim-manager note requires [uv](https://docs.astral.sh/uv/getting-started/installation/) to be installed
+> !nvim-manager requires [uv](https://docs.astral.sh/uv/getting-started/installation/) to be installed
 
 ### Using i.jpillora.com (recommended)
 ```bash

@@ -36,8 +36,9 @@ create-archives:
         outdir="nvim-manager-${VERSION}-${platform}"
         mkdir -p "dist/${outdir}"
         
-        # Copy the Python script
+        # Copy the Python script and update version
         cp nvim-manager.py "dist/${outdir}/nvim-manager.py"
+        sed -i "s/NIGHTLY/${VERSION}/" "dist/${outdir}/nvim-manager.py"
         
         cd dist
         tar czf "${outdir}.tar.gz" "${outdir}"

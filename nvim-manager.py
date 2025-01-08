@@ -19,6 +19,8 @@ import typer
 app = typer.Typer()
 console = Console()
 
+NVIM_MANAGER_VERSION = "NIGHTLY"
+
 GITHUB_REPO = os.getenv(
     "NVIM_MANAGER_GITHUB_REPO", "https://github.com/waylonwalker/devtainer"
 )
@@ -115,6 +117,11 @@ def update(version: str):
         # Reinstall the version
     install(version)
     console.print(f"[green]Version '{version}' updated successfully.[/green]")
+
+
+@app.command()
+def version():
+    console.print(f"[green]Version: {NVIM_MANAGER_VERSION}[/green]")
 
 
 if __name__ == "__main__":
