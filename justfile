@@ -64,4 +64,9 @@ create-release: create-tag create-archives
         dist/install.sh
     rm release_notes.tmp
 
+preview-release-notes:
+    #!/usr/bin/env bash
+    VERSION=$(cat version)
+    ./scripts/get_release_notes.py "$VERSION" | less -R
+
 release: create-release

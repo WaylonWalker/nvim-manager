@@ -38,14 +38,35 @@ You can also manually download the archive for your platform from the releases p
 - [x86_64-unknown-linux-gnu](https://github.com/waylonwalker/nvim-manager/releases/download/v{version}/nvim-manager-{version}-x86_64-unknown-linux-gnu.tar.gz)
 - [aarch64-unknown-linux-gnu](https://github.com/waylonwalker/nvim-manager/releases/download/v{version}/nvim-manager-{version}-aarch64-unknown-linux-gnu.tar.gz)"""
 
-            # Get help output
+            # Get help output for main command and all subcommands
             try:
-                help_output = subprocess.check_output(
+                help_outputs = []
+                
+                # Get main help output
+                main_help = subprocess.check_output(
                     ["./nvim-manager.py", "--help"],
                     stderr=subprocess.STDOUT,
                     universal_newlines=True,
                 )
-                return f"{section.strip()}\n\n{install_instructions.format(version=version)}\n\n## Command Line Usage\n\n```\n{help_output}```"
+                help_outputs.append(("Main Command", main_help))
+                
+                # Get help for each subcommand
+                subcommands = ["install", "list", "update", "version"]
+                for cmd in subcommands:
+                    cmd_help = subprocess.check_output(
+                        ["./nvim-manager.py", cmd, "--help"],
+                        stderr=subprocess.STDOUT,
+                        universal_newlines=True,
+                    )
+                    help_outputs.append((f"Subcommand: {cmd}", cmd_help))
+                
+                # Format all help outputs
+                help_text = "\n\n".join(
+                    f"### {title}\n```\n{output}```" 
+                    for title, output in help_outputs
+                )
+                
+                return f"{section.strip()}\n\n{install_instructions.format(version=version)}\n\n## Command Line Usage\n\n{help_text}"
             except subprocess.CalledProcessError as e:
                 return f"{section.strip()}\n\n{install_instructions.format(version=version)}\n\n## Command Line Usage\n\nError getting help: {e.output}"
 

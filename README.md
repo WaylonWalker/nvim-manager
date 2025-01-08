@@ -48,7 +48,7 @@ You can also manually download the archive for your platform from the releases p
 - [x86_64-unknown-linux-gnu](https://github.com/waylonwalker/nvim-manager/releases/download/v{version}/nvim-manager-{version}-x86_64-unknown-linux-gnu.tar.gz)
 - [aarch64-unknown-linux-gnu](https://github.com/waylonwalker/nvim-manager/releases/download/v{version}/nvim-manager-{version}-aarch64-unknown-linux-gnu.tar.gz)"""
 
-## Usage
+## Setup
 
 `nvim-manager` is a command-line tool for managing Neovim configurations ran
 with [uv](https://docs.astral.sh/uv/getting-started/installation/).
@@ -73,23 +73,100 @@ export NVIM_MANAGER_PREFIX="nvim-waylonwalker-"
 export NVIM_APPNAME=$NVIM_MANAGER_PREFIX-0.0.1
 ```
 
-``` bash
-$ nvim-manager --help
-Usage: nvim-manager [OPTIONS] COMMAND [ARGS]...
+## Command Line Usage
 
-╭─ Options ───────────────────────────────────────────────────────╮
-│ --install-completion          Install completion for the        │
-│                               current shell.                    │
-│ --show-completion             Show completion for the current   │
-│                               shell, to copy it or customize    │
-│                               the installation.                 │
-│ --help                        Show this message and exit.       │
-╰─────────────────────────────────────────────────────────────────╯
-╭─ Commands ──────────────────────────────────────────────────────╮
-│ install         Install a specific version of Neovim            │
-│                 configuration by tag or branch.                 │
-│ list-versions   List available tags/branches and highlight      │
-│                 installed ones.                                 │
-│ update          Update a specific version by reinstalling it.   │
-╰─────────────────────────────────────────────────────────────────╯``
+### Main Command
+
+```
+                                                                                                                                                                                                                                       
+ Usage: nvim-manager.py [OPTIONS] COMMAND [ARGS]...                                                                                                                                                                                    
+                                                                                                                                                                                                                                       
+ nvim-manager manages Neovim configurations by leveraging NVIM_APPNAME.                                                                                                                                                                
+                                                                                                                                                                                                                                       
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --list                -l        List available versions                                                                                                                                                                             │
+│ --version             -v        Show version                                                                                                                                                                                        │
+│ --install-completion            Install completion for the current shell.                                                                                                                                                           │
+│ --show-completion               Show completion for the current shell, to copy it or customize the installation.                                                                                                                    │
+│ --help                          Show this message and exit.                                                                                                                                                                         │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ list      List available tags/branches and highlight installed ones.                                                                                                                                                                │
+│ install   Install a specific version of Neovim configuration by tag or branch.                                                                                                                                                      │
+│ update    Update a specific version by reinstalling it.                                                                                                                                                                             │
+│ version   Show the version of nvim-manager.                                                                                                                                                                                         │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+```
+
+### Subcommand: install
+
+```
+                                                                                                                                                                                                                                       
+ Usage: nvim-manager.py install [OPTIONS] [VERSION]                                                                                                                                                                                    
+                                                                                                                                                                                                                                       
+ Install a specific version of Neovim configuration by tag or branch.                                                                                                                                                                  
+ Example: NVIM_APPNAME=waylonwalker-nvim-0.0.1 nvim                                                                                                                                                                                    
+                                                                                                                                                                                                                                       
+╭─ Arguments ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│   version      [VERSION]  Version to install [default: None]                                                                                                                                                                        │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --distro               TEXT  Install a specific Neovim distribution [default: None]                                                                                                                                                 │
+│ --pick                       Fuzzy pick a version to install                                                                                                                                                                        │
+│ --pick-distro                Fuzzy pick a distro to install                                                                                                                                                                         │
+│ --repo-url             TEXT  Git repository URL [default: None]                                                                                                                                                                     │
+│ --config-path          TEXT  Path to nvim config in repository [default: None]                                                                                                                                                      │
+│ --prefix               TEXT  Prefix for the installation directory [default: None]                                                                                                                                                  │
+│ --force        -f            Force install even if already exists                                                                                                                                                                   │
+│ --help                       Show this message and exit.                                                                                                                                                                            │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+```
+
+### Subcommand: list
+
+```
+                                                                                                                                                                                                                                       
+ Usage: nvim-manager.py list [OPTIONS]                                                                                                                                                                                                 
+                                                                                                                                                                                                                                       
+ List available tags/branches and highlight installed ones.                                                                                                                                                                            
+                                                                                                                                                                                                                                       
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --distro        TEXT  List versions for a specific Neovim distribution [default: None]                                                                                                                                              │
+│ --help                Show this message and exit.                                                                                                                                                                                   │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+```
+
+### Subcommand: update
+
+```
+                                                                                                                                                                                                                                       
+ Usage: nvim-manager.py update [OPTIONS] VERSION                                                                                                                                                                                       
+                                                                                                                                                                                                                                       
+ Update a specific version by reinstalling it.                                                                                                                                                                                         
+ Args:     version: The version to update                                                                                                                                                                                              
+                                                                                                                                                                                                                                       
+╭─ Arguments ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ *    version      TEXT  [default: None] [required]                                                                                                                                                                                  │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                                                                                                                                                                         │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+```
+
+### Subcommand: version
+
+```
+                                                                                                                                                                                                                                       
+ Usage: nvim-manager.py version [OPTIONS]                                                                                                                                                                                              
+                                                                                                                                                                                                                                       
+ Show the version of nvim-manager.                                                                                                                                                                                                     
+                                                                                                                                                                                                                                       
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                                                                                                                                                                         │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
 ```
