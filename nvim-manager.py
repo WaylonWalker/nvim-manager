@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --
+#!/usr/bin/env -S uv run --quiet --script
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
@@ -19,10 +19,12 @@ import typer
 app = typer.Typer()
 console = Console()
 
-GITHUB_REPO = os.getenv("NVIM_GITHUB_REPO", "https://github.com/waylonwalker/devtainer")
-NVIM_CONFIG_PATH = os.getenv("NVIM_CONFIG_PATH", "nvim/.config/nvim")
-INSTALL_DIR = Path(os.getenv("NVIM_INSTALL_DIR", Path.home() / ".config"))
-PREFIX = os.getenv("NVIM_PREFIX", "nvim-waylonwalker-")
+GITHUB_REPO = os.getenv(
+    "NVIM_MANAGER_GITHUB_REPO", "https://github.com/waylonwalker/devtainer"
+)
+NVIM_CONFIG_PATH = os.getenv("NVIM_MANGER_CONFIG_PATH", "nvim/.config/nvim")
+INSTALL_DIR = Path(os.getenv("NVIM_MANAGER_INSTALL_DIR", Path.home() / ".config"))
+PREFIX = os.getenv("NVIM_MANAGER_PREFIX", "nvim-waylonwalker-")
 
 
 @app.command()
@@ -117,4 +119,3 @@ def update(version: str):
 
 if __name__ == "__main__":
     app()
-#!/usr/bin/env -S uv run --script
