@@ -1,3 +1,10 @@
+## 0.0.3
+
+* fix bug introduced in 0.0.2 where install did not respect NVIM_CONFIG_PATH
+* Use NVIM_MANAGER_REPO instead of NVIM_MANAGER_GITHUB_REPO
+* list now lists previously used NVIM_APPNAMES from ~/.local/share/nvim-*
+* remove dependency on fzf (nvim-manager will function without it, but use it for pick commands)
+
 ## 0.0.2
 
 * add install --distro to install distros

@@ -24,12 +24,14 @@ You can install nvim-manager using one of these methods:
 > !nvim-manager requires [uv](https://docs.astral.sh/uv/getting-started/installation/) to be installed
 
 ### Using i.jpillora.com (recommended)
-```bash
+
+``` bash
 curl https://i.jpillora.com/waylonwalker/nvim-manager | bash
 ```
 
 ### Direct install script
-```bash
+
+``` bash
 curl -fsSL https://github.com/waylonwalker/nvim-manager/releases/download/v{version}/install.sh | bash
 ```
 
@@ -41,7 +43,7 @@ You can also manually download the archive for your platform from the releases p
             # Get help output for main command and all subcommands
             try:
                 help_outputs = []
-                
+
                 # Get main help output
                 main_help = subprocess.check_output(
                     ["./nvim-manager.py", "--help"],
@@ -49,7 +51,7 @@ You can also manually download the archive for your platform from the releases p
                     universal_newlines=True,
                 )
                 help_outputs.append(("Main Command", main_help))
-                
+
                 # Get help for each subcommand
                 subcommands = ["install", "list", "update", "version"]
                 for cmd in subcommands:
@@ -59,13 +61,13 @@ You can also manually download the archive for your platform from the releases p
                         universal_newlines=True,
                     )
                     help_outputs.append((f"Subcommand: {cmd}", cmd_help))
-                
+
                 # Format all help outputs
                 help_text = "\n\n".join(
-                    f"### {title}\n```\n{output}```" 
+                    f"### {title}\n\n``` bash\n{output}```"
                     for title, output in help_outputs
                 )
-                
+
                 return f"{section.strip()}\n\n{install_instructions.format(version=version)}\n\n## Command Line Usage\n\n{help_text}"
             except subprocess.CalledProcessError as e:
                 return f"{section.strip()}\n\n{install_instructions.format(version=version)}\n\n## Command Line Usage\n\nError getting help: {e.output}"

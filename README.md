@@ -57,7 +57,7 @@ with [uv](https://docs.astral.sh/uv/getting-started/installation/).
 # Add the following lines to your .bashrc or .zshrc
 
 # Your dotfiles repository
-export NVIM_MANAGER_GITHUB_REPO=https://github.com/WaylonWalker/devtainer
+export NVIM_MANAGER_REPO=https://github.com/WaylonWalker/devtainer
 
 # path to your nvim configuration inside the dotfiles repository
 export NVIM_CONFIG_PATH=nvim/.config/nvim

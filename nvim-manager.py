@@ -21,18 +21,15 @@ import typer
 
 app = typer.Typer()
 console = Console()
-fzf = FzfPrompt()
 
 NVIM_MANAGER_VERSION = "NIGHTLY"
 
-GITHUB_REPO = os.getenv(
-    "NVIM_MANAGER_GITHUB_REPO", "https://github.com/waylonwalker/devtainer"
+NVIM_MANAGER_REPO = os.getenv(
+    "NVIM_MANAGER_REPO",
+    os.getenv("NVIM_MANAGER_GITHUB_REPO", "https://github.com/waylonwalker/devtainer"),
 )
 NVIM_MANAGER_PREFIX = os.getenv("NVIM_MANAGER_PREFIX", "nvim-waylonwalker")
-NVIM_MANAGER_CONFIG_DIR = os.getenv(
-    "NVIM_MANAGER_CONFIG_DIR", os.path.expanduser("~/.config")
-)
-NVIM_CONFIG_PATH = os.getenv("NVIM_MANGER_CONFIG_PATH", "nvim/.config/nvim")
+NVIM_MANAGER_CONFIG_PATH = os.getenv("NVIM_MANGER_CONFIG_PATH", "nvim/.config/nvim")
 INSTALL_DIR = Path(os.getenv("NVIM_MANAGER_INSTALL_DIR", Path.home() / ".config"))
 
 DISTROS = {
@@ -79,19 +76,21 @@ def get_versions(repo_url: str = None):
     try:
         # Create a temporary directory for cloning
         temp_dir = INSTALL_DIR / "temp-nvim-config"
+
         if temp_dir.exists():
             shutil.rmtree(temp_dir)
 
         # Clone the repo with --bare to get all tags
-        repo = Repo.clone_from(repo_url or GITHUB_REPO, temp_dir, bare=True)
+        repo = Repo.clone_from(repo_url or NVIM_MANAGER_REPO, temp_dir, bare=True)
 
         # Get all tags
         versions = []
         for tag in repo.tags:
-            if tag.name.startswith("v"):
-                versions.append(tag.name[1:])  # Remove 'v' prefix
-            else:
-                versions.append(tag.name)
+            # if tag.name.startswith("v"):
+            #     versions.append(tag.name[1:])  # Remove 'v' prefix
+            # else:
+            #     versions.append(tag.name)
+            versions.append(tag.name)
 
         # Clean up
         shutil.rmtree(temp_dir)
@@ -109,16 +108,40 @@ def print_versions(repo_url: str = None, prefix: str = None):
         return
 
     prefix = prefix or NVIM_MANAGER_PREFIX
-    table = Table(title="Available Versions")
-    table.add_column("Version")
-    table.add_column("Status")
+    console.print(f"REPO: {repo_url or NVIM_MANAGER_REPO}")
+    console.print("Available Versions:")
+    # table = Table(title="Available Versions")
+    # table.add_column("Version")
+    # table.add_column("Status")
 
     for version in versions:
         config_dir = INSTALL_DIR / f"{prefix}-{version}"
         status = "[green]Installed[/green]" if config_dir.exists() else ""
-        table.add_row(version, status)
+        console.print(f"  - {version} {status}")
+        # table.add_row(f"{prefix}-{version}", status)
 
-    console.print(table)
+    for distro_name, info in DISTROS.items():
+        if distro_name not in versions:
+            config_dir = INSTALL_DIR / f"{info['prefix']}-{info['version']}"
+            if config_dir.exists():
+                console.print(
+                    f"  - {info['prefix']}-{info['version']} [green]Installed[/green]"
+                )
+                # table.add_row(
+                #     f'{info["prefix"]}-{info["version"]}', "[green]Installed[/green]"
+                # )
+            else:
+                console.print(f"  - {info['prefix']}-{info['version']}")
+                # table.add_row(f'{info["prefix"]}-{info["version"]}', "")
+
+    # console.print(table)
+
+    installed_nvims = [d.name for d in (Path.home() / ".local/share").glob("nvim-*")]
+    console.print("")
+    console.print("previously used NVIM_APPNAMES in ~/.local/share:")
+    for installed_nvim in installed_nvims:
+        if installed_nvim not in versions:
+            console.print(f"  - {installed_nvim}")
 
 
 def version_callback(value: bool):
@@ -178,6 +201,7 @@ def pick_version(versions: list[str], distro_name: str = None) -> str:
 def pick_with_fzf(items: list[str], prompt: str = "Select: ") -> str:
     """Use fzf to pick from a list of items."""
     try:
+        fzf = FzfPrompt()
         selected = fzf.prompt(items, '--prompt="' + prompt + '" --height=10')[0]
         return selected
     except (IndexError, Exception):
@@ -190,10 +214,18 @@ def install_config(
     config_path: str = ".",
     prefix: str = None,
     force: bool = False,
+    verbose: bool = False,
 ):
     """Install a specific configuration version."""
     prefix = prefix or NVIM_MANAGER_PREFIX
     install_dir = INSTALL_DIR / f"{prefix}-{version}"
+    temp_dir = Path("/tmp") / "nvim-manager"
+
+    if verbose:
+        console.print(f"Repo URL: {repo_url}")
+        console.print(f"branch: {version}")
+        console.print(f"Config path in repository: {config_path}")
+        console.print(f"Install directory on host: {install_dir}")
 
     if install_dir.exists() and not force:
         console.print(
@@ -202,41 +234,51 @@ def install_config(
         console.print("Use --force to reinstall")
         raise typer.Exit(1)
 
-    # Clone the repository
+    # Clone the repository to temp directory
     try:
+        if temp_dir.exists():
+            shutil.rmtree(temp_dir)
         if install_dir.exists():
             shutil.rmtree(install_dir)
 
+        # Create install directory
+        install_dir.mkdir(parents=True, exist_ok=True)
+
+        # Clone to temp directory
         Repo.clone_from(
             repo_url,
-            install_dir,
+            temp_dir,
             multi_options=[f"--branch={version}", "--single-branch", "--depth=1"],
         )
 
-        # If config_path is not root, move files from subdirectory
-        if config_path != ".":
-            config_dir = install_dir / config_path
-            if not config_dir.exists():
-                console.print(
-                    f"[red]Error: Config path '{config_path}' not found in repository[/red]"
-                )
-                raise typer.Exit(1)
+        # Use NVIM_MANAGER_CONFIG_DIR as the source directory within the repo
+        source_dir = temp_dir / config_path
+        if not source_dir.exists():
+            console.print(
+                f"[red]Error: Config directory '{config_path}' not found in repository[/red]"
+            )
+            raise typer.Exit(1)
 
-            # Move all files from config_path to root
-            for item in config_dir.iterdir():
-                shutil.move(str(item), str(install_dir / item.name))
+        # Copy all files from source_dir to install_dir
+        for item in source_dir.iterdir():
+            if item.is_file():
+                shutil.copy2(str(item), str(install_dir / item.name))
+            else:
+                shutil.copytree(str(item), str(install_dir / item.name))
 
-            # Remove the now-empty config directory
-            shutil.rmtree(config_dir)
+        # Clean up temp directory
+        shutil.rmtree(temp_dir)
 
         console.print(f"[green]Version '{version}' installed successfully![/green]")
         console.print("\nTo use this version, run:")
         console.print(f"[green]export NVIM_APPNAME={prefix}-{version}[/green]")
 
-    except GitCommandError as e:
+    except (GitCommandError, OSError) as e:
+        if temp_dir.exists():
+            shutil.rmtree(temp_dir)
         if install_dir.exists():
             shutil.rmtree(install_dir)
-        console.print(f"[red]Error: Failed to clone repository: {e}[/red]")
+        console.print(f"[red]Error: Failed to install configuration: {e}[/red]")
         raise typer.Exit(1)
 
 
@@ -297,12 +339,22 @@ def install(
     force: bool = typer.Option(
         False, "--force", "-f", help="Force install even if already exists"
     ),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
 ):
     """Install a specific version of Neovim configuration by tag or branch.
 
     Example:
     NVIM_APPNAME=waylonwalker-nvim-0.0.1 nvim
     """
+    if verbose:
+        import sys
+
+        console.print(
+            f"[green]Using nvim-manager version {NVIM_MANAGER_VERSION}[/green]"
+        )
+        console.print(
+            f"[green]Using python version {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}[/green]"
+        )
     if pick_distro:
         # Pick distro and use its configured version
         distro_name = pick_with_fzf(DISTROS.keys(), "Select distribution: ")
@@ -317,11 +369,12 @@ def install(
             config_path=distro_config["config_path"],
             prefix=distro_config["prefix"],
             force=force,
+            verbose=verbose,
         )
         return
 
     if pick:
-        versions = get_versions(repo_url or GITHUB_REPO)
+        versions = get_versions(repo_url or NVIM_MANAGER_REPO)
         selected_version = pick_with_fzf(versions, "Select version: ")
         if not selected_version:
             console.print("[yellow]No version selected[/yellow]")
@@ -346,16 +399,18 @@ def install(
             config_path=distro_config["config_path"],
             prefix=distro_config["prefix"],
             force=force,
+            verbose=verbose,
         )
         return
 
     # Install user config
     install_config(
         version=version,
-        repo_url=repo_url or GITHUB_REPO,
-        config_path=config_path or ".",
+        repo_url=repo_url or NVIM_MANAGER_REPO,
+        config_path=config_path or NVIM_MANAGER_CONFIG_PATH or ".",
         prefix=prefix,
         force=force,
+        verbose=verbose,
     )
 
 
